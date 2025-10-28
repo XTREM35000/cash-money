@@ -2,8 +2,15 @@ import { motion } from 'framer-motion';
 import { TrendingUp, Users, Package, DollarSign, Clock, CheckCircle, AlertCircle, Activity } from 'lucide-react';
 import StatsCard from '@/components/StatsCard';
 import { Button } from '@/components/ui/button';
+import UserMenu from '@/components/UserMenu';
 
 const Dashboard = () => {
+  // Mock profile data for demo
+  const mockProfile = {
+    full_name: "Thierry Gogo",
+    email: "thierry.gogo@montdepiete.com",
+    avatar_url: null
+  };
   const stats = [
     { icon: DollarSign, title: 'Prêts Actifs', value: '287 450 €', change: '+12.5%', changeType: 'positive' as const, delay: 0.1 },
     { icon: Users, title: 'Clients', value: '1,234', change: '+8.2%', changeType: 'positive' as const, delay: 0.2 },
@@ -44,6 +51,11 @@ const Dashboard = () => {
               <Button size="sm" className="bg-gradient-primary">
                 Nouveau Prêt
               </Button>
+              <UserMenu 
+                profile={mockProfile} 
+                isSuperAdmin={true}
+                isAdmin={false}
+              />
             </div>
           </div>
         </div>
