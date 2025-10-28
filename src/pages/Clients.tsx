@@ -18,7 +18,7 @@ export default function Clients() {
         .from('clients')
         .select('*')
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       return data as Client[];
     }
@@ -49,13 +49,13 @@ export default function Clients() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
         </div>
       ) : (
-        <ClientsList 
-          items={clients || []} 
+        <ClientsList
+          items={clients || []}
           onEdit={handleEditClient}
         />
       )}
 
-      <ClientModal 
+      <ClientModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         client={selectedClient}
