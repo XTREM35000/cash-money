@@ -1,180 +1,207 @@
-import { motion } from 'framer-motion';
-import { TrendingUp, Users, Package, DollarSign, Clock, CheckCircle, AlertCircle, Activity } from 'lucide-react';
-import StatsCard from '@/components/StatsCard';
-import { Button } from '@/components/ui/button';
-import UserMenu from '@/components/UserMenu';
-import { AppSidebar } from '@/components/AppSidebar';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import AnimatedLogo from '@/components/AnimatedLogo';
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import {
+  Users, Package2, ChartBar, Wallet,
+  DollarSign, AlertCircle, Activity, Clock, CheckCircle,
+  Shield
+} from "lucide-react";
 
-const Dashboard = () => {
-  // Mock profile data for demo
-  const mockProfile = {
-    full_name: "Thierry Gogo",
-    email: "thierry.gogo@montdepiete.com",
-    avatar_url: null
-  };
-  const stats = [
-    { icon: DollarSign, title: 'Prêts Actifs', value: '287 450 €', change: '+12.5%', changeType: 'positive' as const, delay: 0.1 },
-    { icon: Users, title: 'Clients', value: '1,234', change: '+8.2%', changeType: 'positive' as const, delay: 0.2 },
-    { icon: Package, title: 'Objets en Dépôt', value: '856', change: '-3.1%', changeType: 'negative' as const, delay: 0.3 },
-    { icon: TrendingUp, title: 'CA du Mois', value: '45 230 €', change: '+18.7%', changeType: 'positive' as const, delay: 0.4 },
-  ];
+import { useQuery } from "@tanstack/react-query";
 
-  const recentActivity = [
-    { icon: CheckCircle, title: 'Nouveau prêt validé', client: 'Marie Dubois', amount: '2,500 €', time: 'Il y a 5 min', color: 'text-success' },
-    { icon: Clock, title: 'Échéance proche', client: 'Jean Martin', amount: '1,200 €', time: 'Dans 2 jours', color: 'text-warning' },
-    { icon: AlertCircle, title: 'Retard de paiement', client: 'Sophie Bernard', amount: '850 €', time: 'Il y a 1 jour', color: 'text-destructive' },
-    { icon: Activity, title: 'Évaluation terminée', client: 'Pierre Petit', amount: '3,400 €', time: 'Il y a 15 min', color: 'text-primary' },
-  ];
+import { AppSidebar } from "@/components/AppSidebar";
+import StatsCard from "@/components/StatsCard";
+import AnimatedLogo from "@/components/AnimatedLogo";
+import UserMenu from "@/components/UserMenu";
+import { Button } from "@/components/ui/button";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
+
+import { clientsService, itemsService, transactionsService, paymentsService } from "@/services";
+import { cn } from "@/lib/utils";
+
+// ✅ Fake profile before auth setup
+const mockProfile = {
+  full_name: "Thierry Gogo",
+  email: "thierry.gogo@montdepiete.com",
+  avatar_url: null
+};
+
+// ✅ Demo Recent Activity (à remplacer plus tard par Supabase)
+const recentActivity = [
+  { icon: CheckCircle, title: 'Nouveau prêt validé', client: 'Marie Dubois', amount: '2 500 €', time: 'Il y a 5 min', color: 'text-green-500' },
+  { icon: Clock, title: 'Échéance proche', client: 'Jean Martin', amount: '1 200 €', time: 'Dans 2 jours', color: 'text-yellow-500' },
+  { icon: AlertCircle, title: 'Retard de paiement', client: 'Sophie Bernard', amount: '850 €', time: 'Il y a 1 jour', color: 'text-red-500' },
+  { icon: Activity, title: 'Évaluation terminée', client: 'Pierre Petit', amount: '3 400 €', time: 'Il y a 15 min', color: 'text-blue-500' },
+];
+
+export default function Dashboard() {
+  const [totals, setTotals] = useState({
+    activeClients: 0,
+    totalItems: 0,
+    itemsValue: 0,
+    activeLoans: 0,
+    totalLoaned: 0,
+    totalInterest: 0,
+    totalPayments: 0,
+    lateLoans: 0,
+  });
+
+  const { data: clients, isLoading: loadingClients } = useQuery({
+    queryKey: ["clients"],
+    queryFn: () => clientsService.getAll()
+  });
+
+  const { data: items, isLoading: loadingItems } = useQuery({
+    queryKey: ["items"],
+    queryFn: () => itemsService.getAll()
+  });
+
+  const { data: transactions, isLoading: loadingTransactions } = useQuery({
+    queryKey: ["transactions"],
+    queryFn: () => transactionsService.getAll()
+  });
+
+  const { data: payments, isLoading: loadingPayments } = useQuery({
+    queryKey: ["payments"],
+    queryFn: () => paymentsService.getAll()
+  });
+
+  const isLoading = loadingClients || loadingItems || loadingTransactions || loadingPayments;
+
+  useEffect(() => {
+    if (!isLoading && clients && items && transactions && payments) {
+      const today = new Date();
+      const activeTransactions = transactions.filter(t => t.status === 'active');
+      const lateTransactions = activeTransactions.filter(t => new Date(t.due_date) < today);
+
+      const totalLoaned = activeTransactions.reduce((sum, t) => sum + Number(t.loan_amount), 0);
+      const totalInterest = activeTransactions.reduce(
+        (sum, t) => sum + Number(t.loan_amount) * Number(t.interest_rate) / 100, 0
+      );
+
+      setTotals({
+        activeClients: clients.length,
+        totalItems: items.length,
+        itemsValue: items.reduce((sum, item) => sum + Number(item.estimated_value), 0),
+        activeLoans: activeTransactions.length,
+        totalLoaned,
+        totalInterest,
+        totalPayments: payments.reduce((sum, p) => sum + Number(p.amount), 0),
+        lateLoans: lateTransactions.length
+      });
+    }
+  }, [clients, items, transactions, payments, isLoading]);
+
+  const stats: Array<{
+    title: string;
+    value: string;
+    icon: typeof Users;
+    change: string;
+    changeType: "neutral" | "positive" | "negative";
+  }> = [
+      { title: "Clients", value: totals.activeClients.toString(), icon: Users, change: "0", changeType: "neutral" },
+      { title: "Objets en dépôt", value: totals.totalItems.toString(), icon: Package2, change: "0", changeType: "neutral" },
+      { title: "Valeur du stock", value: `${totals.itemsValue.toLocaleString()} €`, icon: ChartBar, change: "0", changeType: "neutral" },
+      { title: "Prêts actifs", value: totals.activeLoans.toString(), icon: Wallet, change: "0", changeType: "neutral" },
+      { title: "Capital engagé", value: `${totals.totalLoaned.toLocaleString()} €`, icon: DollarSign, change: "0", changeType: "neutral" },
+      { title: "Intérêts attendus", value: `${totals.totalInterest.toLocaleString()} €`, icon: Activity, change: "0", changeType: "neutral" },
+      { title: "Paiements reçus", value: `${totals.totalPayments.toLocaleString()} €`, icon: Shield, change: "0", changeType: "neutral" },
+      { title: "Retards", value: totals.lateLoans.toString(), icon: AlertCircle, change: "0", changeType: "neutral" },
+    ];
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-background via-secondary to-background">
+      <div className="min-h-screen flex bg-gradient-to-br from-background via-secondary to-background">
         <AppSidebar />
-        
+
         <div className="flex-1 flex flex-col">
-          {/* Header */}
+
+          {/* HEADER */}
           <motion.header
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="bg-card/50 backdrop-blur-md border-b border-border sticky top-0 z-40"
+            className="sticky top-0 z-40 bg-card/50 backdrop-blur-md border-b border-border"
           >
-            <div className="container mx-auto px-6 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <SidebarTrigger className="lg:hidden" />
-                  <AnimatedLogo size={40} animated={true} />
-                  <div>
-                    <h1 className="text-2xl font-bold bg-gradient-gold bg-clip-text text-transparent">
-                      GageMoney
-                    </h1>
-                    <p className="text-sm text-muted-foreground">Tableau de bord</p>
-                  </div>
+            <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger className="lg:hidden" />
+                <AnimatedLogo size={40} animated />
+                <div>
+                  <h1 className="text-2xl font-bold bg-gradient-gold bg-clip-text text-transparent">GageMoney</h1>
+                  <p className="text-sm text-muted-foreground">Tableau de bord</p>
                 </div>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm">
-                Notifications
-              </Button>
-              <Button size="sm" className="bg-gradient-primary">
-                Nouveau Prêt
-              </Button>
-              <UserMenu 
-                profile={mockProfile} 
-                isSuperAdmin={true}
-                isAdmin={false}
-              />
-            </div>
               </div>
+
+              <UserMenu profile={mockProfile} isSuperAdmin />
             </div>
           </motion.header>
 
-          {/* Main Content */}
+          {/* CONTENT */}
           <main className="flex-1 container mx-auto px-6 py-8">
-        {/* Welcome Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <h2 className="text-3xl font-bold text-foreground mb-2">
-            Bienvenue, Thierry 👋
-          </h2>
-          <p className="text-muted-foreground">
-            Voici un aperçu de votre activité aujourd'hui
-          </p>
-        </motion.div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat) => (
-            <StatsCard key={stat.title} {...stat} />
-          ))}
-        </div>
+            {/* SKELETON LOADING */}
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => (
+                  <Skeleton key={i} className="h-32 w-full rounded-xl" />
+                ))}
+              </div>
+            ) : (
+              <>
+                {/* Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                  {stats.map(stat => <StatsCard key={stat.title} {...stat} />)}
+                </div>
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Recent Activity */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
-            className="lg:col-span-2 bg-card/80 backdrop-blur-sm border border-border rounded-2xl p-6 shadow-glass"
-          >
-            <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
-              <Activity className="h-5 w-5 text-primary" />
-              Activité Récente
-            </h3>
-            <div className="space-y-4">
-              {recentActivity.map((activity, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.6 + index * 0.1 }}
-                  className="flex items-start gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
-                >
-                  <div className={`p-2 rounded-lg ${activity.color} bg-current/10`}>
-                    <activity.icon className={`h-5 w-5 ${activity.color}`} />
+                {/* Activity */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                  {/* Left part */}
+                  <div className="lg:col-span-2 bg-card/80 backdrop-blur border rounded-2xl p-6">
+                    <h3 className="text-xl font-semibold mb-4 flex gap-2 items-center">
+                      <Activity className="h-5 w-5 text-primary" /> Activité Réçente
+                    </h3>
+
+                    <div className="space-y-4">
+                      {recentActivity.map((a, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.1 * i }}
+                          className="flex justify-between p-3 border rounded-lg"
+                        >
+                          <div className="flex gap-3 items-center">
+                            <a.icon className={cn("w-6 h-6", a.color)} />
+                            <div>
+                              <p className="font-medium">{a.title}</p>
+                              <p className="text-xs text-muted-foreground">{a.client}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold">{a.amount}</p>
+                            <p className="text-xs text-muted-foreground">{a.time}</p>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-foreground">{activity.title}</p>
-                    <p className="text-sm text-muted-foreground">{activity.client}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-foreground">{activity.amount}</p>
-                    <p className="text-xs text-muted-foreground">{activity.time}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
 
-          {/* Quick Actions */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.6 }}
-            className="bg-card/80 backdrop-blur-sm border border-border rounded-2xl p-6 shadow-glass"
-          >
-            <h3 className="text-xl font-bold text-foreground mb-6">
-              Actions Rapides
-            </h3>
-            <div className="space-y-3">
-              <Button className="w-full justify-start bg-gradient-primary text-primary-foreground" size="lg">
-                <Users className="mr-2 h-5 w-5" />
-                Nouveau Client
-              </Button>
-              <Button className="w-full justify-start" variant="outline" size="lg">
-                <Package className="mr-2 h-5 w-5" />
-                Enregistrer Objet
-              </Button>
-              <Button className="w-full justify-start" variant="outline" size="lg">
-                <DollarSign className="mr-2 h-5 w-5" />
-                Encaisser Paiement
-              </Button>
-              <Button className="w-full justify-start" variant="outline" size="lg">
-                <Clock className="mr-2 h-5 w-5" />
-                Rappels du Jour
-              </Button>
-            </div>
+                  {/* Quick actions */}
+                  <div className="space-y-3">
+                    <Button className="w-full justify-start">Nouveau Client</Button>
+                    <Button className="w-full justify-start" variant="outline">Enregistrer Objet</Button>
+                    <Button className="w-full justify-start" variant="outline">Encaisser Paiement</Button>
+                    <Button className="w-full justify-start" variant="outline">Rappels du Jour</Button>
+                  </div>
 
-            {/* Info Card */}
-            <div className="mt-6 p-4 bg-gradient-primary rounded-xl">
-              <p className="text-sm text-primary-foreground/90 font-medium mb-2">
-                💡 Astuce du jour
-              </p>
-              <p className="text-xs text-primary-foreground/80">
-                Utilisez les raccourcis clavier pour accélérer votre workflow quotidien.
-              </p>
-            </div>
-          </motion.div>
-        </div>
+                </div>
+              </>
+            )}
+
           </main>
         </div>
       </div>
     </SidebarProvider>
   );
-};
-
-export default Dashboard;
+}
