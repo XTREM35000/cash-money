@@ -1,71 +1,57 @@
 import { supabase } from './supabase';
+import type { Client, ClientsResponse } from '@/types';
 
-const TABLE_CLIENTS = import.meta.env.VITE_TABLE_CLIENTS ?? 'clients';
-
-export interface Client {
-  id: string;
-  created_at: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  address: string;
-  id_number: string;
-  id_type: string;
-}
+const TABLE_CLIENTS = 'clients';
 
 export const clientsService = {
-  async getAll() {
+  async getAll(): Promise<ClientsResponse> {
     const { data, error } = await supabase
       .from(TABLE_CLIENTS)
       .select('*')
       .order('created_at', { ascending: false });
-
     if (error) throw error;
-    return data;
+    return data || [];
   },
 
-  async getById(id: string) {
+  async getById(id: string): Promise<Client> {
     const { data, error } = await supabase
       .from(TABLE_CLIENTS)
       .select('*')
       .eq('id', id)
       .single();
-
     if (error) throw error;
+    if (!data) throw new Error('Client not found');
     return data;
   },
 
-  async create(client: Omit<Client, 'id' | 'created_at'>) {
+  async create(client: Omit<Client, 'id' | 'created_at'>): Promise<Client> {
     const { data, error } = await supabase
       .from(TABLE_CLIENTS)
       .insert([client])
       .select()
       .single();
-
     if (error) throw error;
+    if (!data) throw new Error('Failed to create client');
     return data;
   },
 
-  async update(id: string, client: Partial<Client>) {
+  async update(id: string, client: Partial<Client>): Promise<Client> {
     const { data, error } = await supabase
       .from(TABLE_CLIENTS)
       .update(client)
       .eq('id', id)
       .select()
       .single();
-
     if (error) throw error;
+    if (!data) throw new Error('Failed to update client');
     return data;
   },
 
-  async delete(id: string) {
+  async delete(id: string): Promise<void> {
     const { error } = await supabase
       .from(TABLE_CLIENTS)
       .delete()
       .eq('id', id);
-
     if (error) throw error;
-    return true;
   }
 };

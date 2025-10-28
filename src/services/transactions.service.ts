@@ -1,95 +1,66 @@
 import { supabase } from './supabase';
+import type { Transaction, TransactionsResponse } from '@/types';
 
-const TABLE_TRANSACTIONS = import.meta.env.VITE_TABLE_TRANSACTIONS ?? 'transactions';
-const TABLE_ITEMS = import.meta.env.VITE_TABLE_ITEMS ?? 'items';
-const TABLE_CLIENTS = import.meta.env.VITE_TABLE_CLIENTS ?? 'clients';
-
-export interface Transaction {
-  id: string;
-  created_at: string;
-  item_id: string;
-  client_id: string;
-  loan_amount: number;
-  interest_rate: number;
-  loan_duration: number; // in days
-  due_date: string;
-  status: 'active' | 'paid' | 'defaulted' | 'extended';
-  total_amount_due: number;
-}
+const TABLE_TRANSACTIONS = 'transactions';
 
 export const transactionsService = {
-  async getAll() {
+  async getAll(): Promise<TransactionsResponse> {
     const { data, error } = await supabase
       .from(TABLE_TRANSACTIONS)
-      .select(`
-        *,
-        ${TABLE_ITEMS} (name, estimated_value),
-        ${TABLE_CLIENTS} (first_name, last_name)
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
-
     if (error) throw error;
-    return data;
+    return data || [];
   },
 
-  async getById(id: string) {
+  async getById(id: string): Promise<Transaction> {
     const { data, error } = await supabase
       .from(TABLE_TRANSACTIONS)
-      .select(`
-        *,
-        ${TABLE_ITEMS} (name, estimated_value),
-        ${TABLE_CLIENTS} (first_name, last_name)
-      `)
+      .select('*')
       .eq('id', id)
       .single();
-
     if (error) throw error;
+    if (!data) throw new Error('Transaction not found');
     return data;
   },
 
-  async getByClientId(clientId: string) {
+  async getByClientId(clientId: string): Promise<TransactionsResponse> {
     const { data, error } = await supabase
       .from(TABLE_TRANSACTIONS)
-      .select(`
-        *,
-        ${TABLE_ITEMS} (name, estimated_value)
-      `)
+      .select('*')
       .eq('client_id', clientId);
-
     if (error) throw error;
-    return data;
+    return data || [];
   },
 
-  async create(transaction: Omit<Transaction, 'id' | 'created_at'>) {
+  async create(transaction: Omit<Transaction, 'id' | 'created_at'>): Promise<Transaction> {
     const { data, error } = await supabase
       .from(TABLE_TRANSACTIONS)
       .insert([transaction])
       .select()
       .single();
-
     if (error) throw error;
+    if (!data) throw new Error('Failed to create transaction');
     return data;
   },
 
-  async update(id: string, transaction: Partial<Transaction>) {
+  async update(id: string, transaction: Partial<Transaction>): Promise<Transaction> {
     const { data, error } = await supabase
       .from(TABLE_TRANSACTIONS)
       .update(transaction)
       .eq('id', id)
       .select()
       .single();
-
     if (error) throw error;
+    if (!data) throw new Error('Failed to update transaction');
     return data;
   },
 
-  async delete(id: string) {
+  async delete(id: string): Promise<void> {
     const { error } = await supabase
       .from(TABLE_TRANSACTIONS)
       .delete()
       .eq('id', id);
-
     if (error) throw error;
-    return true;
   }
 };

@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { useOnboarding } from '../contexts/OnboardingContext';
+import { AdminModal } from './workflow/AdminModal';
+import { PlanModal } from './workflow/PlanModal';
+import { SMSValidationModal } from './workflow/SmsValidationModal';
+import { AuthenticationModal } from './workflow/AuthenticationModal';
+
 interface SplashScreenProps {
   /** pass true when the app has finished preloading data */
   isAppReady: boolean;
@@ -8,15 +14,24 @@ interface SplashScreenProps {
 
 const SplashScreen = ({ isAppReady }: SplashScreenProps) => {
   const [isVisible, setIsVisible] = useState(true);
+  const { currentStep, completeCurrentStep } = useOnboarding();
 
   // Keep the splash visible until the app reports ready.
   useEffect(() => {
-    if (isAppReady) {
+    if (isAppReady && currentStep !== 'splash') {
       // small delay to allow a smooth fade-out animation
       const t = setTimeout(() => setIsVisible(false), 450);
       return () => clearTimeout(t);
     }
-  }, [isAppReady]);
+  }, [isAppReady, currentStep]);
+
+  // Handle splash completion
+  useEffect(() => {
+    if (isAppReady && currentStep === 'splash') {
+      const t = setTimeout(() => completeCurrentStep(), 4000);
+      return () => clearTimeout(t);
+    }
+  }, [isAppReady, currentStep, completeCurrentStep]);
 
   const services = [
     { icon: "💎", name: "Bijoux", delay: 0 },
@@ -96,7 +111,7 @@ const SplashScreen = ({ isAppReady }: SplashScreenProps) => {
                 💎
               </motion.div>
               <h1 className="text-6xl font-bold text-white mb-4 tracking-tight bg-gradient-to-r from-white via-blue-100 to-cyan-100 bg-clip-text text-transparent">
-                MontDePiété Pro
+                Gage en CashMoney
               </h1>
               <motion.p
                 className="text-blue-100 text-xl font-light"
@@ -104,7 +119,7 @@ const SplashScreen = ({ isAppReady }: SplashScreenProps) => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8 }}
               >
-                Solution Professionnelle de Prêt sur Gages
+                Solution Premium de Prêt sur Gages
               </motion.p>
             </motion.div>
 
@@ -283,7 +298,11 @@ const SplashScreen = ({ isAppReady }: SplashScreenProps) => {
               </motion.p>
             </motion.div>
 
-            {/* Badges de sécurité en bas */}
+            {/* Workflow Modals */}
+            {currentStep === 'admin' && <AdminModal />}
+            {currentStep === 'plan' && <PlanModal />}
+            {currentStep === 'sms' && <SMSValidationModal isOpen={true} onClose={() => { }} />}
+            {currentStep === 'auth' && <AuthenticationModal />}            {/* Badges de sécurité en bas */}
             <motion.div
               className="flex justify-center gap-6 mt-8"
               initial={{ opacity: 0, y: 20 }}
