@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import AnimatedLogo from "@/components/AnimatedLogo";
 import {
   Sidebar,
   SidebarContent,
@@ -320,15 +321,18 @@ export const AppSidebar = ({ onNavigate, isSuperAdmin, isAdmin, profile }: AppSi
       <SidebarHeader className="p-5 border-b dark:border-gray-800 bg-white dark:bg-gray-950">
         <div className="flex items-center gap-3">
           <div className="cursor-pointer transition-transform duration-200">
-            <div className={cn("text-4xl", state === "collapsed" ? "text-3xl" : "text-4xl")}>
-              🏦
-            </div>
+            <AnimatedLogo
+              size={state === "collapsed" ? 32 : 40}
+              animated={true}
+              mainColor="text-amber-400"
+              secondaryColor="text-yellow-600"
+            />
           </div>
 
           {state !== "collapsed" && (
             <div className="flex flex-col">
-              <span className="font-bold text-lg dark:text-white text-gray-900 bg-gradient-primary bg-clip-text text-transparent">
-                MontDePiété Pro
+              <span className="font-bold text-lg dark:text-white text-gray-900 bg-gradient-gold bg-clip-text text-transparent">
+                GageMoney
               </span>
               <p className="text-xs text-gray-500 dark:text-gray-400">Gestion de Prêts sur Gages</p>
             </div>

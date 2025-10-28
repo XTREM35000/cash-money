@@ -3,6 +3,9 @@ import { TrendingUp, Users, Package, DollarSign, Clock, CheckCircle, AlertCircle
 import StatsCard from '@/components/StatsCard';
 import { Button } from '@/components/ui/button';
 import UserMenu from '@/components/UserMenu';
+import { AppSidebar } from '@/components/AppSidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import AnimatedLogo from '@/components/AnimatedLogo';
 
 const Dashboard = () => {
   // Mock profile data for demo
@@ -26,24 +29,29 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary to-background">
-      {/* Header */}
-      <motion.header
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="bg-card/50 backdrop-blur-md border-b border-border sticky top-0 z-40"
-      >
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="text-4xl">🏦</div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  MontDePiété Pro
-                </h1>
-                <p className="text-sm text-muted-foreground">Tableau de bord</p>
-              </div>
-            </div>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-gradient-to-br from-background via-secondary to-background">
+        <AppSidebar />
+        
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <motion.header
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="bg-card/50 backdrop-blur-md border-b border-border sticky top-0 z-40"
+          >
+            <div className="container mx-auto px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <SidebarTrigger className="lg:hidden" />
+                  <AnimatedLogo size={40} animated={true} />
+                  <div>
+                    <h1 className="text-2xl font-bold bg-gradient-gold bg-clip-text text-transparent">
+                      GageMoney
+                    </h1>
+                    <p className="text-sm text-muted-foreground">Tableau de bord</p>
+                  </div>
+                </div>
             <div className="flex items-center gap-3">
               <Button variant="outline" size="sm">
                 Notifications
@@ -57,12 +65,12 @@ const Dashboard = () => {
                 isAdmin={false}
               />
             </div>
-          </div>
-        </div>
-      </motion.header>
+              </div>
+            </div>
+          </motion.header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-6 py-8">
+          {/* Main Content */}
+          <main className="flex-1 container mx-auto px-6 py-8">
         {/* Welcome Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -162,8 +170,10 @@ const Dashboard = () => {
             </div>
           </motion.div>
         </div>
-      </main>
-    </div>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 };
 
