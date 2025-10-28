@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Coins, DollarSign } from 'lucide-react';
+import { Coins } from 'lucide-react';
+import Gem from '@/components/icons/Gem';
 
 interface AnimatedLogoProps {
   size?: number;
@@ -30,9 +31,9 @@ const AnimatedLogo: React.FC<AnimatedLogoProps> = ({
         transition={animated ? { duration: 2.5, repeat: Infinity, ease: 'easeInOut' } : undefined}
       >
         <Coins className={`${mainColor} drop-shadow-lg`} style={{ width: mainIconSize, height: mainIconSize }} />
-        <DollarSign 
-          className={`${secondaryColor} absolute -top-1 -right-1`} 
-          style={{ width: secondaryIconSize, height: secondaryIconSize }} 
+        <Gem
+          className={`${secondaryColor} absolute -top-1 -right-1`}
+          style={{ width: secondaryIconSize, height: secondaryIconSize }}
         />
       </motion.div>
 

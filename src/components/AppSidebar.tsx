@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   Users,
   Package,
-  DollarSign,
   ShoppingBag,
   TrendingUp,
   Settings,
@@ -24,6 +23,7 @@ import {
   Search,
   Tag
 } from "lucide-react";
+import Gem from '@/components/icons/Gem';
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import AnimatedLogo from "@/components/AnimatedLogo";
@@ -56,72 +56,26 @@ export const AppSidebar = ({ onNavigate, isSuperAdmin, isAdmin, profile }: AppSi
 
   const navGroups = {
     dashboard: [
-      { path: "/dashboard", label: "Tableau de Bord", icon: LayoutDashboard, admin: false }
+      { path: "/", label: "Dashboard", icon: LayoutDashboard, admin: false }
     ],
 
     gestion: [
-      {
-        path: "/clients",
-        label: "Clients",
-        icon: Users,
-        admin: false,
-        children: [
-          { path: "/clients/list", label: "Liste des Clients", icon: Users, admin: false },
-          { path: "/clients/new", label: "Nouveau Client", icon: UserCog, admin: false },
-          { path: "/clients/search", label: "Rechercher", icon: Search, admin: false }
-        ]
-      },
-      {
-        path: "/objects",
-        label: "Objets & Catalogue",
-        icon: Package,
-        admin: false,
-        children: [
-          { path: "/objects/depot", label: "Objets en Dépôt", icon: Package, admin: false },
-          { path: "/objects/evaluation", label: "Évaluations", icon: Tag, admin: false },
-          { path: "/objects/categories", label: "Catégories", icon: FileText, admin: false }
-        ]
-      },
-      {
-        path: "/loans",
-        label: "Prêts",
-        icon: DollarSign,
-        admin: false,
-        children: [
-          { path: "/loans/active", label: "Prêts Actifs", icon: CheckCircle, admin: false },
-          { path: "/loans/pending", label: "En Attente", icon: Clock, admin: false },
-          { path: "/loans/overdue", label: "Retards", icon: AlertCircle, admin: false },
-          { path: "/loans/history", label: "Historique", icon: History, admin: false }
-        ]
-      }
+      { path: "/clients", label: "Clients", icon: Users, admin: false },
+      { path: "/objects", label: "Objets déposés", icon: Package, admin: false }
+    ],
+
+    loans: [
+      { path: "/loans/active", label: "Prêts en cours", icon: Gem, admin: false },
+      { path: "/loans/overdue", label: "Retards", icon: AlertCircle, admin: false }
     ],
 
     operations: [
-      {
-        path: "/payments",
-        label: "Paiements",
-        icon: CreditCard,
-        admin: false,
-        children: [
-          { path: "/payments/receive", label: "Encaisser", icon: DollarSign, admin: false },
-          { path: "/payments/history", label: "Historique", icon: History, admin: false },
-          { path: "/payments/receipts", label: "Reçus", icon: FileText, admin: false }
-        ]
-      },
-      { path: "/sales", label: "Ventes", icon: ShoppingBag, admin: false },
-      { path: "/alerts", label: "Alertes & Rappels", icon: Bell, admin: false }
-    ],
-
-    analytics: [
-      { path: "/analytics", label: "Tableau de Bord", icon: PieChart, admin: false },
-      { path: "/reports", label: "Rapports", icon: FileText, admin: false },
-      { path: "/trends", label: "Tendances", icon: TrendingUp, admin: false }
+      { path: "/payments", label: "Paiements / Caisse", icon: CreditCard, admin: false },
+      { path: "/inventory", label: "Inventaire / Lots à vendre", icon: ShoppingBag, admin: false }
     ],
 
     administration: [
-      { path: "/agency", label: "Agence", icon: Building, admin: true },
-      { path: "/users", label: "Utilisateurs", icon: UserCog, admin: true },
-      { path: "/security", label: "Sécurité", icon: Shield, admin: true },
+      { path: "/users", label: "Paramètres & Utilisateurs", icon: UserCog, admin: true },
       { path: "/settings", label: "Configuration", icon: Settings, admin: true }
     ],
 
@@ -165,6 +119,7 @@ export const AppSidebar = ({ onNavigate, isSuperAdmin, isAdmin, profile }: AppSi
   const groupColors = {
     dashboard: { active: "bg-blue-600", text: "text-blue-600", accent: "#2563eb" },
     gestion: { active: "bg-emerald-600", text: "text-emerald-600", accent: "#059669" },
+    loans: { active: "bg-amber-600", text: "text-amber-600", accent: "#d97706" },
     operations: { active: "bg-purple-600", text: "text-purple-600", accent: "#9333ea" },
     analytics: { active: "bg-indigo-600", text: "text-indigo-600", accent: "#4f46e5" },
     administration: { active: "bg-red-600", text: "text-red-600", accent: "#dc2626" },
@@ -174,6 +129,7 @@ export const AppSidebar = ({ onNavigate, isSuperAdmin, isAdmin, profile }: AppSi
   const groupLabels = {
     dashboard: "Tableau de Bord",
     gestion: "Gestion",
+    loans: "Prêts",
     operations: "Opérations",
     analytics: "Analytics",
     administration: "Administration",
@@ -201,6 +157,9 @@ export const AppSidebar = ({ onNavigate, isSuperAdmin, isAdmin, profile }: AppSi
   };
 
   const renderNavGroup = (groupKey: string, items: any[], colorScheme: any) => {
+    // ensure we always have a color scheme to avoid runtime errors
+    const safeColor = colorScheme ?? { active: "bg-amber-600", text: "text-amber-600", accent: "#FFD166" };
+
     const filteredItems = items.filter(item =>
       !item.admin || (item.admin && (isSuperAdmin || isAdmin))
     );
@@ -237,10 +196,10 @@ export const AppSidebar = ({ onNavigate, isSuperAdmin, isAdmin, profile }: AppSi
                 "group flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer select-none transition-colors duration-200",
                 isActive ? "bg-opacity-100 text-white" : "hover:bg-gray-50 dark:hover:bg-gray-700"
               )}
-              style={isActive ? { background: colorScheme.accent, boxShadow: "0 6px 18px rgba(0,0,0,0.08)" } : undefined}
+              style={isActive ? { background: safeColor.accent, boxShadow: "0 6px 18px rgba(0,0,0,0.08)" } : undefined}
             >
               <div className="w-5 h-5 flex-shrink-0">
-                <IconWrap Icon={item.icon} isActive={isActive} color={isActive ? (colorScheme.accent + "80") : (colorScheme.accent + "40")} label={item.label} />
+                <IconWrap Icon={item.icon} isActive={isActive} color={isActive ? (safeColor.accent + "80") : (safeColor.accent + "40")} label={item.label} />
               </div>
 
               <span className={cn("text-sm font-medium truncate", isActive ? "text-white" : "text-gray-800 dark:text-gray-200")}>
@@ -281,10 +240,10 @@ export const AppSidebar = ({ onNavigate, isSuperAdmin, isAdmin, profile }: AppSi
                         "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors duration-150",
                         childActive ? "text-white" : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                       )}
-                      style={childActive ? { background: colorScheme.accent } : undefined}
+                      style={childActive ? { background: safeColor.accent } : undefined}
                     >
                       <div className="w-4 h-4">
-                        <IconWrap Icon={child.icon ?? FileText} isActive={childActive} color={colorScheme.accent} label={child.label} />
+                        <IconWrap Icon={child.icon ?? FileText} isActive={childActive} color={safeColor.accent} label={child.label} />
                       </div>
                       <span className="truncate">{child.label}</span>
                       {childActive && state !== "collapsed" && <span className="ml-auto w-2 h-2 bg-white rounded-full" />}

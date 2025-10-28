@@ -2,20 +2,21 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface SplashScreenProps {
-  onComplete: () => void;
+  /** pass true when the app has finished preloading data */
+  isAppReady: boolean;
 }
 
-const SplashScreen = ({ onComplete }: SplashScreenProps) => {
+const SplashScreen = ({ isAppReady }: SplashScreenProps) => {
   const [isVisible, setIsVisible] = useState(true);
 
+  // Keep the splash visible until the app reports ready.
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-      setTimeout(onComplete, 500);
-    }, 4000);
-
-    return () => clearTimeout(timer);
-  }, [onComplete]);
+    if (isAppReady) {
+      // small delay to allow a smooth fade-out animation
+      const t = setTimeout(() => setIsVisible(false), 450);
+      return () => clearTimeout(t);
+    }
+  }, [isAppReady]);
 
   const services = [
     { icon: "💎", name: "Bijoux", delay: 0 },
@@ -72,31 +73,32 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
               className="mb-8"
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ 
-                type: "spring", 
-                stiffness: 200, 
+              transition={{
+                type: "spring",
+                stiffness: 200,
                 damping: 15,
-                duration: 1 
+                duration: 1
               }}
             >
-              <motion.div 
+              <motion.div
                 className="text-8xl mb-6"
-                animate={{ 
+                animate={{
                   y: [0, -15, 0],
                   scale: [1, 1.1, 1]
                 }}
-                transition={{ 
-                  duration: 4, 
+                transition={{
+                  duration: 4,
                   repeat: Infinity,
-                  ease: "easeInOut" 
+                  ease: "easeInOut"
                 }}
               >
-                🏦
+                {/* stylized gem symbol as fallback */}
+                💎
               </motion.div>
               <h1 className="text-6xl font-bold text-white mb-4 tracking-tight bg-gradient-to-r from-white via-blue-100 to-cyan-100 bg-clip-text text-transparent">
                 MontDePiété Pro
               </h1>
-              <motion.p 
+              <motion.p
                 className="text-blue-100 text-xl font-light"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -120,7 +122,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.2 }}
               >
-                <motion.p 
+                <motion.p
                   className="text-blue-200 text-lg font-light mb-2"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -128,11 +130,11 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
                 >
                   Développé par
                 </motion.p>
-                <motion.h2 
+                <motion.h2
                   className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent mb-4"
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ 
+                  transition={{
                     delay: 1.5,
                     type: "spring",
                     stiffness: 200
@@ -140,7 +142,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
                 >
                   Thierry Gogo
                 </motion.h2>
-                <motion.p 
+                <motion.p
                   className="text-blue-300 text-md font-medium"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -154,8 +156,8 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
               <motion.div
                 initial={{ scale: 0, y: 30 }}
                 animate={{ scale: 1, y: 0 }}
-                transition={{ 
-                  type: "spring", 
+                transition={{
+                  type: "spring",
                   stiffness: 300,
                   damping: 20,
                   delay: 2.0
@@ -167,8 +169,8 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
                     whileHover={{ scale: 1.08 }}
                     transition={{ type: "spring", stiffness: 400 }}
                   >
-                    <img 
-                      src="/images/profile01.png" 
+                    <img
+                      src="/profile01.png"
                       alt="Thierry Gogo"
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -195,7 +197,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
             </motion.div>
 
             {/* Grille des services */}
-            <motion.div 
+            <motion.div
               className="grid grid-cols-4 gap-6 mb-12 max-w-2xl mx-auto"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -212,7 +214,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
                     type: "spring",
                     stiffness: 300
                   }}
-                  whileHover={{ 
+                  whileHover={{
                     scale: 1.15,
                     y: -5,
                     transition: { type: "spring", stiffness: 400 }
@@ -220,7 +222,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
                 >
                   <motion.div
                     className="text-4xl mb-2 bg-gradient-to-br from-blue-400 to-purple-400 rounded-2xl p-3 shadow-lg group-hover:shadow-xl transition-all duration-300"
-                    animate={{ 
+                    animate={{
                       y: [0, -10, 0],
                     }}
                     transition={{
@@ -239,7 +241,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
             </motion.div>
 
             {/* Barre de progression style "barre de métal précieux" */}
-            <motion.div 
+            <motion.div
               className="mt-8 w-80 h-3 bg-gray-700/50 rounded-full overflow-hidden mx-auto shadow-inner border border-gray-600/30"
               initial={{ width: 0, opacity: 0 }}
               animate={{ width: 320, opacity: 1 }}

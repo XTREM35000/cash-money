@@ -1,5 +1,7 @@
 import { supabase } from './supabase';
 
+const TABLE_CLIENTS = import.meta.env.VITE_TABLE_CLIENTS ?? 'clients';
+
 export interface Client {
   id: string;
   created_at: string;
@@ -15,7 +17,7 @@ export interface Client {
 export const clientsService = {
   async getAll() {
     const { data, error } = await supabase
-      .from('clients')
+      .from(TABLE_CLIENTS)
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -25,7 +27,7 @@ export const clientsService = {
 
   async getById(id: string) {
     const { data, error } = await supabase
-      .from('clients')
+      .from(TABLE_CLIENTS)
       .select('*')
       .eq('id', id)
       .single();
@@ -36,7 +38,7 @@ export const clientsService = {
 
   async create(client: Omit<Client, 'id' | 'created_at'>) {
     const { data, error } = await supabase
-      .from('clients')
+      .from(TABLE_CLIENTS)
       .insert([client])
       .select()
       .single();
@@ -47,7 +49,7 @@ export const clientsService = {
 
   async update(id: string, client: Partial<Client>) {
     const { data, error } = await supabase
-      .from('clients')
+      .from(TABLE_CLIENTS)
       .update(client)
       .eq('id', id)
       .select()
@@ -59,7 +61,7 @@ export const clientsService = {
 
   async delete(id: string) {
     const { error } = await supabase
-      .from('clients')
+      .from(TABLE_CLIENTS)
       .delete()
       .eq('id', id);
 

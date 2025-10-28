@@ -1,5 +1,9 @@
 import { supabase } from './supabase';
 
+const TABLE_PAYMENTS = import.meta.env.VITE_TABLE_PAYMENTS ?? 'payments';
+const TABLE_TRANSACTIONS = import.meta.env.VITE_TABLE_TRANSACTIONS ?? 'transactions';
+const TABLE_CLIENTS = import.meta.env.VITE_TABLE_CLIENTS ?? 'clients';
+
 export interface Payment {
   id: string;
   created_at: string;
@@ -13,12 +17,12 @@ export interface Payment {
 export const paymentsService = {
   async getAll() {
     const { data, error } = await supabase
-      .from('payments')
+      .from(TABLE_PAYMENTS)
       .select(`
         *,
-        transactions (
+        ${TABLE_TRANSACTIONS} (
           loan_amount,
-          clients (first_name, last_name)
+          ${TABLE_CLIENTS} (first_name, last_name)
         )
       `)
       .order('created_at', { ascending: false });
@@ -29,12 +33,12 @@ export const paymentsService = {
 
   async getById(id: string) {
     const { data, error } = await supabase
-      .from('payments')
+      .from(TABLE_PAYMENTS)
       .select(`
         *,
-        transactions (
+        ${TABLE_TRANSACTIONS} (
           loan_amount,
-          clients (first_name, last_name)
+          ${TABLE_CLIENTS} (first_name, last_name)
         )
       `)
       .eq('id', id)
@@ -46,7 +50,7 @@ export const paymentsService = {
 
   async getByTransactionId(transactionId: string) {
     const { data, error } = await supabase
-      .from('payments')
+      .from(TABLE_PAYMENTS)
       .select('*')
       .eq('transaction_id', transactionId);
 
@@ -56,7 +60,7 @@ export const paymentsService = {
 
   async create(payment: Omit<Payment, 'id' | 'created_at'>) {
     const { data, error } = await supabase
-      .from('payments')
+      .from(TABLE_PAYMENTS)
       .insert([payment])
       .select()
       .single();
@@ -67,7 +71,7 @@ export const paymentsService = {
 
   async update(id: string, payment: Partial<Payment>) {
     const { data, error } = await supabase
-      .from('payments')
+      .from(TABLE_PAYMENTS)
       .update(payment)
       .eq('id', id)
       .select()
@@ -79,7 +83,7 @@ export const paymentsService = {
 
   async delete(id: string) {
     const { error } = await supabase
-      .from('payments')
+      .from(TABLE_PAYMENTS)
       .delete()
       .eq('id', id);
 
