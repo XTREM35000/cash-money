@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import AppButton from '@/components/ui/AppButton';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -332,3 +332,4 @@ export const SuperAdminModal = ({ isOpen, onClose, onSuccess }: SuperAdminModalP
 };
 
 export default SuperAdminModal;
+

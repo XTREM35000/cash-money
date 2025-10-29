@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { DraggableModalWrapper } from '@/components/ui/draggable-modal-wrapper';
+import { EmailInput } from '@/components/ui/email-input';
+import { PhoneInput } from '@/components/ui/phone-input';
 import {
   Select,
   SelectContent,
@@ -103,114 +106,106 @@ const ClientModal = ({ open, onOpenChange, onSaved, client }: Props) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{client ? 'Modifier Client' : 'Nouveau Client'}</DialogTitle>
-        </DialogHeader>
-        <Card className="p-4">
-          <form onSubmit={handleSave} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+    <>
+      <DraggableModalWrapper isOpen={open} onClose={() => onOpenChange(false)} className="max-w-2xl">
+        <div>
+          <DialogHeader>
+            <DialogTitle>{client ? 'Modifier Client' : 'Nouveau Client'}</DialogTitle>
+          </DialogHeader>
+
+          <Card className="p-4">
+            <form onSubmit={handleSave} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Prénom</label>
+                  <Input
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Prénom du client"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Nom</label>
+                  <Input
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Nom du client"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
-                <label className="text-sm font-medium">Prénom</label>
+                <EmailInput value={email ?? ''} onChange={(v) => setEmail(v)} />
+              </div>
+
+              <div className="space-y-2">
+                <PhoneInput value={phone ?? ''} onChange={(v) => setPhone(v)} />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Adresse</label>
                 <Input
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="Prénom du client"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Adresse complète"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Nom</label>
-                <Input
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Nom du client"
-                />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Type d'identification</label>
+                  <Select value={idType} onValueChange={setIdType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choisir..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="passport">Passeport</SelectItem>
+                      <SelectItem value="id_card">Carte d'identité</SelectItem>
+                      <SelectItem value="driver_license">Permis de conduire</SelectItem>
+                      <SelectItem value="other">Autre</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Numéro d'identification</label>
+                  <Input
+                    value={idNumber}
+                    onChange={(e) => setIdNumber(e.target.value)}
+                    placeholder="Numéro du document"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Email</label>
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="email@exemple.com"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Téléphone</label>
-              <Input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+243..."
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Adresse</label>
-              <Input
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Adresse complète"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Type d'identification</label>
-                <Select value={idType} onValueChange={setIdType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choisir..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="passport">Passeport</SelectItem>
-                    <SelectItem value="id_card">Carte d'identité</SelectItem>
-                    <SelectItem value="driver_license">Permis de conduire</SelectItem>
-                    <SelectItem value="other">Autre</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Numéro d'identification</label>
-                <Input
-                  value={idNumber}
-                  onChange={(e) => setIdNumber(e.target.value)}
-                  placeholder="Numéro du document"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2">
-              {client && (
+              <div className="flex justify-end gap-2">
+                {client && (
+                  <Button
+                    variant="ghost"
+                    type="button"
+                    className="text-red-600 hover:bg-red-50"
+                    onClick={handleDelete}
+                    disabled={loading}
+                  >
+                    Supprimer
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   type="button"
-                  className="text-red-600 hover:bg-red-50"
-                  onClick={handleDelete}
+                  onClick={() => onOpenChange(false)}
+                >
+                  Annuler
+                </Button>
+                <Button
+                  type="submit"
                   disabled={loading}
                 >
-                  Supprimer
+                  {loading ? 'Enregistrement...' : 'Enregistrer'}
                 </Button>
-              )}
-              <Button
-                variant="ghost"
-                type="button"
-                onClick={() => onOpenChange(false)}
-              >
-                Annuler
-              </Button>
-              <Button
-                type="submit"
-                disabled={loading}
-              >
-                {loading ? 'Enregistrement...' : 'Enregistrer'}
-              </Button>
-            </div>
-          </form>
-        </Card>
-      </DialogContent>
+              </div>
+            </form>
+          </Card>
+        </div>
+      </DraggableModalWrapper>
 
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
@@ -226,7 +221,7 @@ const ClientModal = ({ open, onOpenChange, onSaved, client }: Props) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Dialog>
+    </>
   );
 };
 

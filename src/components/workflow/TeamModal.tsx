@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, PanInfo } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { EmailInput } from '@/components/ui/email-input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -244,13 +245,12 @@ export const TeamModal = ({ isOpen, onClose, onSuccess }: TeamModalProps) => {
                   </div>
                   <div className="space-y-1">
                     <Label htmlFor="memberEmail" className="text-xs">Email *</Label>
-                    <Input
-                      id="memberEmail"
-                      type="email"
+                    <EmailInput
                       value={newMember.email}
-                      onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
+                      onChange={(v) => setNewMember({ ...newMember, email: v })}
                       className="h-8 text-sm transition-all duration-200 focus:ring-2 focus:ring-[#128C7E]"
-                      placeholder="jean@example.com"
+                      required
+                      label="Email"
                     />
                   </div>
                 </div>

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { WhatsAppModal } from '@/components/ui/whatsapp-modal';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { Card } from '@/components/ui/card';
 
 const JournalModal = ({ open, onOpenChange, entry, onSaved }: any) => {
@@ -57,3 +57,4 @@ const JournalModal = ({ open, onOpenChange, entry, onSaved }: any) => {
 };
 
 export default JournalModal;
+

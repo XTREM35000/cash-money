@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { PonteModal } from './';
 
@@ -55,3 +55,4 @@ const PontesList: React.FC = () => {
 };
 
 export default PontesList;
+

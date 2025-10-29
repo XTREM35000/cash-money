@@ -4,7 +4,7 @@ import AnimatedLogo from '@/components/AnimatedLogo';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -102,3 +102,4 @@ const ReceptionCommandeModal = ({ isOpen, open, onClose, onOpenChange, commandeI
 };
 
 export default ReceptionCommandeModal;
+

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Dialog } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { EmailInput } from '../ui/email-input';
+import { PasswordInput } from '../ui/password-input';
 import { supabase } from '../../lib/supabase';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 
@@ -59,22 +61,10 @@ export function AdminModal() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Input
-                  type="email"
-                  placeholder="Email administrateur"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+                <EmailInput value={email} onChange={(v) => setEmail(v)} required label="Email administrateur" />
               </div>
               <div>
-                <Input
-                  type="password"
-                  placeholder="Mot de passe"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <PasswordInput value={password} onChange={(v) => setPassword(v)} required label="Mot de passe" showStrength={false} />
               </div>
               <Button
                 type="submit"

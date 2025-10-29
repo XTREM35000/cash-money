@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { WhatsAppModal } from '@/components/ui/whatsapp-modal';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { ModalHeader } from '@/components/workflow/shared/ModalHeader';
 import AnimatedLogoPoisson from '@/components/AnimatedLogoPoisson';
 import { getTenantId } from '@/services/tenantService';
@@ -168,3 +168,4 @@ const EscargotiereModal = ({ open, onOpenChange, parc, onSaved }: any) => {
 };
 
 export default EscargotiereModal;
+

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import AppButton from '@/components/ui/AppButton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, CheckCircle, Eye, EyeOff, Cog } from 'lucide-react';
@@ -383,4 +383,5 @@ export function useAuth(): { profile: any } {
 }
 
 export default AdminCreationModal;
+
 

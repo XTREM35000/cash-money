@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { EmailInput } from '@/components/ui/email-input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
@@ -224,8 +225,8 @@ export const SMSValidationModal = ({
               </Alert>
             )}
             {timeLeft > 0 && (
-        <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-lg">
-          <div className="flex items-center justify-center text-sm text-emerald-800 dark:text-emerald-200">
+              <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-lg">
+                <div className="flex items-center justify-center text-sm text-emerald-800 dark:text-emerald-200">
                   <Clock className="w-4 h-4 mr-2" />
                   Code valide pendant {formatTime(timeLeft)}
                 </div>
@@ -234,15 +235,11 @@ export const SMSValidationModal = ({
             <form onSubmit={handleVerifyCode} className="space-y-4">
               <div>
                 <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">Email Admin *</Label>
-                <Input
-                  id="email"
-                  type="email"
+                <EmailInput
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="votre@email.com"
+                  onChange={(v) => setEmail(v)}
                   required
-                  disabled={loading || !!tenantAdminData}
-                  className="mt-1"
+                  label="Email Admin"
                 />
                 {tenantAdminData && (
                   <p className="text-xs text-amber-700 mt-1">Mode simulation activé — email et OTP pré-remplis pour test</p>

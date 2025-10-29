@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { EscargotiereModal } from './';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
@@ -83,3 +83,4 @@ const EscargotiereList: React.FC = () => {
 };
 
 export default EscargotiereList;
+

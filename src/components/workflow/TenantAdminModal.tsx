@@ -2,7 +2,7 @@
 // 
 import { useState, useRef, useEffect } from 'react';
 import { motion, PanInfo } from 'framer-motion';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -514,4 +514,5 @@ export const TenantAdminModal = ({ isOpen, onClose, onSuccess, selectedPlan }: T
     </FormModal>
   );
 };
+
 

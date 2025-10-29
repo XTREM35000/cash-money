@@ -3,6 +3,8 @@ import { Dialog } from '../ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { EmailInput } from '../ui/email-input';
+import { PasswordInput } from '../ui/password-input';
 import { Label } from '../ui/label';
 import { supabase } from '../../lib/supabase';
 import { useOnboarding } from '../../contexts/OnboardingContext';
@@ -74,25 +76,21 @@ export function AuthenticationModal() {
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
-                    <Input
-                      id="login-email"
-                      type="email"
-                      placeholder="votre@email.com"
+                    <EmailInput
                       value={loginData.email}
-                      onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                      onChange={(v) => setLoginData({ ...loginData, email: v })}
                       required
+                      label="Email"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="login-password">Mot de passe</Label>
-                    <Input
-                      id="login-password"
-                      type="password"
+                    <PasswordInput
                       value={loginData.password}
-                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                      onChange={(v) => setLoginData({ ...loginData, password: v })}
                       required
+                      label="Mot de passe"
+                      showStrength={false}
                     />
                   </div>
 
@@ -111,36 +109,30 @@ export function AuthenticationModal() {
               <TabsContent value="register">
                 <form onSubmit={handleRegister} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="register-email">Email</Label>
-                    <Input
-                      id="register-email"
-                      type="email"
-                      placeholder="votre@email.com"
+                    <EmailInput
                       value={registerData.email}
-                      onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                      onChange={(v) => setRegisterData({ ...registerData, email: v })}
                       required
+                      label="Email"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="register-password">Mot de passe</Label>
-                    <Input
-                      id="register-password"
-                      type="password"
+                    <PasswordInput
                       value={registerData.password}
-                      onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+                      onChange={(v) => setRegisterData({ ...registerData, password: v })}
                       required
+                      label="Mot de passe"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="register-confirm-password">Confirmer le mot de passe</Label>
-                    <Input
-                      id="register-confirm-password"
-                      type="password"
+                    <PasswordInput
                       value={registerData.confirmPassword}
-                      onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
+                      onChange={(v) => setRegisterData({ ...registerData, confirmPassword: v })}
                       required
+                      label="Confirmer le mot de passe"
+                      showStrength={false}
                     />
                   </div>
 

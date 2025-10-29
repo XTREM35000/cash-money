@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { JournalModal } from './';
 
@@ -109,3 +109,4 @@ const JournalList: React.FC = () => {
 };
 
 export default JournalList;
+

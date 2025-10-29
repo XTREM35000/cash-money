@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { FormModal } from '@/components/ui/FormModal';
 import AnimatedLogo from "@/components/AnimatedLogo";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { EmailInput } from '@/components/ui/email-input';
+import { PhoneInput } from '@/components/ui/phone-input';
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
@@ -114,66 +111,46 @@ const CreateProfileModal = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <AnimatedLogo size={24} />
-            <span>
-              {existing
-                ? "Modifier le Client"
-                : `Créer ${role === "supplier" ? "Fournisseur" : "Client"}`}
-            </span>
-          </DialogTitle>
-        </DialogHeader>
+    <FormModal
+      isOpen={open}
+      onClose={() => onOpenChange(false)}
+      draggable
+      className="sm:max-w-md"
+      title={existing ? "Modifier le Client" : `Créer ${role === "supplier" ? "Fournisseur" : "Client"}`}>
+      <Card className="p-4">
+        <form onSubmit={handleCreate} className="space-y-4">
+          <div>
+            <label className="text-sm font-medium">Nom complet</label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full"
+            />
+          </div>
 
-        <Card className="p-4">
-          <form onSubmit={handleCreate} className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Nom complet</label>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full"
-              />
-            </div>
+          <div>
+            <EmailInput value={email} onChange={(v) => setEmail(v)} className="w-full" />
+          </div>
 
-            <div>
-              <label className="text-sm font-medium">Email</label>
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full"
-              />
-            </div>
+          <div>
+            <PhoneInput value={phone} onChange={(v) => setPhone(v)} className="w-full" />
+          </div>
 
-            <div>
-              <label className="text-sm font-medium">Téléphone</label>
-              <Input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full"
-              />
-            </div>
-
-            <div className="flex items-center justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Annuler
-              </Button>
-              <Button type="submit" disabled={loading}>
-                {loading
-                  ? "Chargement..."
-                  : existing
-                    ? "Enregistrer"
-                    : "Créer"}
-              </Button>
-            </div>
-          </form>
-        </Card>
-      </DialogContent>
-    </Dialog>
+          <div className="flex items-center justify-end gap-3">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Annuler
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading
+                ? "Chargement..."
+                : existing
+                  ? "Enregistrer"
+                  : "Créer"}
+            </Button>
+          </div>
+        </form>
+      </Card>
+    </FormModal>
   );
 };
 

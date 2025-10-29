@@ -17,12 +17,15 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FormModal } from '@/components/ui/FormModal';
-import { ThematicLogo } from '@/components/ui/ThematicLogo';
-import { supabase } from '@/integrations/supabase/client';
+import AnimatedLogo from '@/components/AnimatedLogo';
+import { supabase } from '@/lib/supabase';
 
 interface PlanSelectionModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  // support both shapes: (open/onOpenChange) and (isOpen/onClose) for backwards compatibility
+  open?: boolean;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onClose?: () => void;
   onSuccess?: (selectedPlan: Plan) => void;
 }
 
@@ -62,12 +65,15 @@ interface SubscriptionPlanDB {
   is_active: boolean;
 }
 
-export const PlanSelectionModal = ({ isOpen, onClose, onSuccess }: PlanSelectionModalProps) => {
+export const PlanSelectionModal = ({ open, isOpen: isOpenProp, onOpenChange, onClose, onSuccess }: PlanSelectionModalProps) => {
+  const modalOpen = open ?? isOpenProp ?? false;
+  const handleClose = () => {
+    if (typeof onOpenChange === 'function') onOpenChange(false);
+    else if (typeof onClose === 'function') onClose();
+  };
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(false);
-  const [dragY, setDragY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
   const [business, setBusiness] = useState<'sees' | 'other'>('sees');
 
   // Constante utilisée pour représenter une durée illimitée dans la logique des plans
@@ -223,7 +229,7 @@ export const PlanSelectionModal = ({ isOpen, onClose, onSuccess }: PlanSelection
         rawPlans = reloaded || [];
       }
 
-  console.log('🔄 Formatage des plans...');
+      console.log('🔄 Formatage des plans...');
       const formattedPlans: Plan[] = (rawPlans as any[]).map((plan: any) => {
         console.log(`📝 Formatage du plan ${plan.name}:`, {
           id: plan.id,
@@ -270,7 +276,7 @@ export const PlanSelectionModal = ({ isOpen, onClose, onSuccess }: PlanSelection
   // Nouvelle fonction pour sauvegarder le plan
   const saveSelectedPlan = async (plan: Plan) => {
     try {
-  const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non connecté');
 
       const { error: profileError } = await supabase
@@ -345,118 +351,73 @@ export const PlanSelectionModal = ({ isOpen, onClose, onSuccess }: PlanSelection
     }
   };
 
-  // Gestion du drag vertical
-  const handleDragStart = () => {
-    setIsDragging(true);
-  };
-
-  const handleDrag = (event: any, info: PanInfo) => {
-    // Empêcher le drag horizontal excessif
-    if (Math.abs(info.offset.x) > 50) {
-      return;
-    }
-    // Augmenter les limites de drag vertical pour compenser les messages d'erreur
-    const maxDragY = 300; // Augmenté de 200 à 300
-    const clampedY = Math.max(-maxDragY, Math.min(maxDragY, info.offset.y));
-    setDragY(clampedY);
-  };
-
-  const handleDragEnd = (event: any, info: PanInfo) => {
-    setIsDragging(false);
-    if (Math.abs(info.offset.x) > 100) {
-      setDragY(0);
-      return;
-    }
-    if (info.offset.y > 250 && info.velocity.y > 500) { // Augmenté de 200 à 250
-      onClose();
-    } else {
-      setDragY(0);
-    }
-  };
-
-  const handlePlanSelect = (planId: string) => {
-    setSelectedPlan(planId);
-  };
-
   return (
     <FormModal
-      isOpen={isOpen}
-      onClose={onClose}
+      isOpen={modalOpen}
+      onClose={handleClose}
       draggable
-      aria-label="Sélection du plan d'abonnement"
       className="max-w-2xl"
+      title="Choisissez votre Plan"
     >
-      {/* Header compact WhatsApp */}
-      <div className="flex flex-col items-center justify-center pt-4 pb-2 bg-gradient-to-r from-[#128C7E] to-[#075E54] text-white rounded-t-xl">
-        <ThematicLogo theme="plan" size={40} className="mb-2" />
-        <h2 className="text-lg font-bold mb-1">Choisissez votre Plan</h2>
-        <p className="text-xs opacity-90">Sélectionnez l'abonnement adapté</p>
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 text-white/80 hover:text-white hover:bg-white/20 focus:ring-white/50"
-          aria-label="Fermer la modal"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
+      <div className="space-y-4">
+        {/* Business selector */}
+        <div className="flex items-center justify-center gap-3">
+          <button
+            onClick={() => setBusiness('sees')}
+            className={cn('flex items-center gap-2 px-3 py-1 rounded-full transition-all',
+              business === 'sees' ? 'bg-emerald-100 ring-2 ring-emerald-300' : 'bg-white/60')}
+            aria-pressed={business === 'sees'}
+          >
+            <motion.span
+              animate={{ y: business === 'sees' ? [-4, 0, -4] : [0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className="text-lg"
+            >
+              🐟
+            </motion.span>
+            <span className="text-sm font-semibold">SeeS</span>
+          </button>
+          <button
+            onClick={() => setBusiness('other')}
+            className={cn('flex items-center gap-2 px-3 py-1 rounded-full transition-all',
+              business === 'other' ? 'bg-amber-100 ring-2 ring-amber-300' : 'bg-white/60')}
+            aria-pressed={business === 'other'}
+          >
+            <motion.span
+              animate={{ y: business === 'other' ? [-3, 0, -3] : [0] }}
+              transition={{ duration: 1.8, repeat: Infinity }}
+              className="text-lg"
+            >
+              🐌
+            </motion.span>
+            <span className="text-sm font-semibold">Autre Business</span>
+          </button>
+        </div>
 
-      {/* Contenu compact SANS SCROLL */}
-      <div className="bg-gradient-to-b from-white to-gray-50 dark:from-[hsl(var(--card))] dark:to-[hsl(var(--card))]">
-          <div className="p-3">
-            {/* Business selector */}
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <button
-                onClick={() => setBusiness('sees')}
-                className={cn('flex items-center gap-2 px-3 py-1 rounded-full transition-all', business === 'sees' ? 'bg-emerald-100 ring-2 ring-emerald-300' : 'bg-white/60')}
-                aria-pressed={business === 'sees'}
-              >
-                <motion.span animate={{ y: business === 'sees' ? [-4, 0, -4] : [0] }} transition={{ duration: 1.5, repeat: Infinity }} className="text-lg">🐟</motion.span>
-                <span className="text-sm font-semibold">SeeS</span>
-              </button>
-              <button
-                onClick={() => setBusiness('other')}
-                className={cn('flex items-center gap-2 px-3 py-1 rounded-full transition-all', business === 'other' ? 'bg-amber-100 ring-2 ring-amber-300' : 'bg-white/60')}
-                aria-pressed={business === 'other'}
-              >
-                <motion.span animate={{ y: business === 'other' ? [-3, 0, -3] : [0] }} transition={{ duration: 1.8, repeat: Infinity }} className="text-lg">🐌</motion.span>
-                <span className="text-sm font-semibold">Autre Business</span>
-              </button>
-            </div>
-          {/* Cartes des plans ultra-compactes */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-            {plans
-              .filter(p => business === 'sees' ? p.type.startsWith('sees') || p.type === 'free' : !p.type.startsWith('sees') || p.type === 'free')
-              .map((plan) => {
-              let features: any = {};
-              try {
-                features = typeof plan.features === 'string'
-                  ? JSON.parse(plan.features)
-                  : plan.features || {};
-              } catch {
-                features = {};
-              }
+        {/* Plan cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {plans
+            .filter(p => business === 'sees' ? p.type.startsWith('sees') || p.type === 'free' : !p.type.startsWith('sees') || p.type === 'free')
+            .map((plan) => {
+              const features = typeof plan.features === 'string' ?
+                JSON.parse(plan.features) : plan.features || {};
               const isSelected = selectedPlan === plan.id;
               const isPopular = plan.type === 'monthly';
+
               return (
                 <Card
                   key={plan.id}
                   className={cn(
                     "relative transition-all duration-200 cursor-pointer",
-                    isSelected ? "ring-2 ring-primary shadow-lg scale-105" : "hover:shadow-md",
+                    isSelected ? "ring-2 ring-primary shadow-lg scale-[1.02]" : "hover:shadow-md",
                     getPlanColor(plan.type)
                   )}
                   onClick={() => setSelectedPlan(plan.id)}
-                  tabIndex={0}
-                  aria-label={`Sélectionner le plan ${plan.name}`}
-                  role="button"
                 >
                   <CardHeader className="pb-2">
                     {isPopular && (
-                      <Badge
-                        className="absolute -top-1 -right-1 bg-gradient-to-r from-[#128C7E] to-[#075E54] text-xs"
-                        variant="secondary"
-                      >
-                        ⭐
+                      <Badge className="absolute -top-1 -right-1 bg-gradient-to-r from-emerald-500 to-emerald-600">
+                        ⭐ Populaire
                       </Badge>
                     )}
                     <CardTitle className="text-sm font-bold">{plan.name}</CardTitle>
@@ -464,8 +425,13 @@ export const PlanSelectionModal = ({ isOpen, onClose, onSuccess }: PlanSelection
                   <CardContent className="p-2">
                     <div className="mb-2 flex items-baseline justify-between">
                       <div>
-                        <p className="text-lg font-bold">{plan.price === 0 ? 'Gratuit' : `${plan.price.toLocaleString('fr-FR')} F`}</p>
-                        <p className="text-xs text-muted-foreground">{plan.type === 'free' ? '1 semaine' : plan.type.includes('monthly') ? '/mois' : '/an'}</p>
+                        <p className="text-lg font-bold">
+                          {plan.price === 0 ? 'Gratuit' : `${plan.price.toLocaleString('fr-FR')} F`}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {plan.type === 'free' ? '1 semaine' :
+                            plan.type.includes('monthly') ? '/mois' : '/an'}
+                        </p>
                       </div>
                       <div className="text-right text-xs">
                         {renderStartupText(features)}
@@ -477,49 +443,50 @@ export const PlanSelectionModal = ({ isOpen, onClose, onSuccess }: PlanSelection
                         <FeatureItem key={idx} text={f} />
                       ))}
                     </ul>
-                    {/* Short advantages list */}
+
                     <div className="text-xs text-gray-600">
                       <p className="font-semibold text-sm mb-1">Avantages</p>
                       <ul className="list-inside list-disc">
                         <li>Intégration rapide et support prioritaire</li>
                         <li>Sauvegarde et analytics</li>
                         <li>Accès multi-utilisateurs</li>
-                        {plan.type === 'sees_annual' && <li>Économie annuelle: ~20% (paiement unique)</li>}
-                        {plan.type === 'sees_monthly' && <li>Flexibilité mensuelle, activation immédiate</li>}
+                        {plan.type === 'sees_annual' &&
+                          <li>Économie annuelle: ~20% (paiement unique)</li>}
+                        {plan.type === 'sees_monthly' &&
+                          <li>Flexibilité mensuelle, activation immédiate</li>}
                       </ul>
                     </div>
                   </CardContent>
                 </Card>
               );
             })}
-          </div>
-          {/* Boutons d'action compacts */}
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="flex-1 h-7 text-xs"
-            >
-              Annuler
-            </Button>
-            <Button
-              onClick={handleContinue}
-              disabled={!selectedPlan || loading}
-              className="flex-1 h-7 text-xs bg-gradient-to-r from-[#128C7E] to-[#075E54] hover:from-[#0F7B6B] hover:to-[#064A42] text-white"
-            >
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-2 w-2 border-b-2 border-white mr-1" />
-                  Sauvegarde...
-                </>
-              ) : (
-                <>
-                  <ArrowRight className="h-3 w-3 mr-1" />
-                  Continuer
-                </>
-              )}
-            </Button>
-          </div>
+        </div>
+        {/* Action buttons */}
+        <div className="flex gap-2 pt-2">
+          <Button
+            variant="outline"
+            onClick={handleClose}
+            className="flex-1"
+          >
+            Annuler
+          </Button>
+          <Button
+            onClick={handleContinue}
+            disabled={!selectedPlan || loading}
+            className="flex-1"
+          >
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                Sauvegarde...
+              </>
+            ) : (
+              <>
+                Continuer
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </>
+            )}
+          </Button>
         </div>
       </div>
     </FormModal>
@@ -615,7 +582,7 @@ const getPlanColor = (type: string): string => {
     case 'free':
       return 'bg-gray-50 hover:bg-gray-100';
     case 'monthly':
-  return 'bg-emerald-50 hover:bg-emerald-100';
+      return 'bg-emerald-50 hover:bg-emerald-100';
     default:
       return 'bg-purple-50 hover:bg-purple-100';
   }

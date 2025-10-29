@@ -4,10 +4,42 @@ import AnimatedLogo from '@/components/AnimatedLogo';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { WhatsAppModal } from '@/components/ui/whatsapp-modal';
-import ProfileAutocomplete from '@/components/ui/ProfileAutocomplete';
+
+const ProfileAutocomplete: React.FC<{
+  value: string;
+  onSelect?: (p: { id: string; full_name: string } | null) => void;
+  placeholder?: string;
+  onCreateSuggestion?: (name: string) => void;
+}> = ({ value, onSelect, placeholder, onCreateSuggestion }) => {
+  const [input, setInput] = useState(value || '');
+  React.useEffect(() => {
+    setInput(value || '');
+  }, [value]);
+
+  return (
+    <div className="flex gap-2">
+      <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder={placeholder} />
+      <button
+        type="button"
+        className="px-3 py-1 border rounded"
+        onClick={() => onSelect?.(input ? { id: input, full_name: input } : null)}
+      >
+        Sélectionner
+      </button>
+      <button
+        type="button"
+        className="px-3 py-1 border rounded"
+        onClick={() => onCreateSuggestion?.(input)}
+      >
+        Créer
+      </button>
+    </div>
+  );
+};
+
 import CreateProfileModal from '@/components/workflow/CreateProfileModal';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -113,7 +145,7 @@ const VenteClientModal = ({ isOpen, open, onClose, onOpenChange, onSaved }: Prop
         </div>
       </WhatsAppModal>
 
-      <CreateProfileModal isOpen={openCreateClient} onClose={() => setOpenCreateClient(false)} role="client" initialName={clientName} onCreated={(p) => { setClientId(p.id); setClientName(p.full_name); }} />
+      <CreateProfileModal open={openCreateClient} onOpenChange={(v: boolean) => setOpenCreateClient(v)} role="client" initialName={clientName} onCreated={(p) => { setClientId(p.id); setClientName(p.full_name); }} />
     </>
   );
 };

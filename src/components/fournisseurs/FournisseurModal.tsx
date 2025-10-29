@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { AvatarUpload } from '@/components/ui/avatar-upload';
 import { EmailInput } from '@/components/ui/email-input';
 import { PhoneInput } from '@/components/ui/phone-input';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
@@ -145,3 +145,4 @@ const FournisseurModal = ({ isOpen, onClose, onSaved, existing }: Props) => {
 };
 
 export default FournisseurModal;
+

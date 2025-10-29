@@ -5,11 +5,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { OnboardingProvider } from "./contexts/OnboardingContext";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import SplashScreen from "./components/SplashScreen";
 import Dashboard from "./pages/Dashboard";
 import Clients from "./pages/Clients";
 import NotFound from "./pages/NotFound";
 import { clientsService, itemsService, transactionsService, paymentsService } from "@/services";
+import AppLayout from '@/components/AppLayout';
 
 const queryClient = new QueryClient();
 
@@ -54,20 +56,22 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <OnboardingProvider>
-            {!isAppReady ? (
-              <SplashScreen isAppReady={isAppReady} />
-            ) : (
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/clients" element={<Clients />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            )}
-          </OnboardingProvider>
-        </BrowserRouter>
+        <SidebarProvider>
+          <BrowserRouter>
+            <OnboardingProvider>
+              {!isAppReady ? (
+                <SplashScreen isAppReady={isAppReady} />
+              ) : (
+                <Routes>
+                  <Route path="/" element={<AppLayout title="Dashboard"><Dashboard /></AppLayout>} />
+                  <Route path="/clients" element={<AppLayout title="Clients"><Clients /></AppLayout>} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<AppLayout title="404"><NotFound /></AppLayout>} />
+                </Routes>
+              )}
+            </OnboardingProvider>
+          </BrowserRouter>
+        </SidebarProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

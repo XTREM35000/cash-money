@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/table';
 import { Client } from '@/types';
 import { Button } from '@/components/ui/button';
-import { PencilIcon } from 'lucide-react';
+import { PencilIcon, MessageSquare } from 'lucide-react';
 
 interface ClientsListProps {
   items: Client[];
@@ -45,7 +45,7 @@ const ClientsList = ({ items, onEdit }: ClientsListProps) => {
                 {client.id_type === 'other' && 'Autre'}
               </TableCell>
               <TableCell>{client.id_number}</TableCell>
-              <TableCell>
+              <TableCell className="flex gap-2">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -54,6 +54,25 @@ const ClientsList = ({ items, onEdit }: ClientsListProps) => {
                 >
                   <PencilIcon className="h-4 w-4" />
                 </Button>
+
+                {/* WhatsApp quick action when phone exists */}
+                {client.phone && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      // Normalize phone to digits and remove leading +
+                      const digits = (client.phone || '').replace(/\D/g, '');
+                      const normalized = digits.replace(/^0+/, '');
+                      const url = `https://wa.me/${normalized}`;
+                      window.open(url, '_blank');
+                    }}
+                    className="h-8 w-8"
+                    title={`Contacter ${client.first_name}`}
+                  >
+                    <MessageSquare className="h-4 w-4 text-green-600" />
+                  </Button>
+                )}
               </TableCell>
             </TableRow>
           ))}

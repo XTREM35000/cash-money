@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import ProfileAutocomplete from '@/components/ui/ProfileAutocomplete';
 import CreateProfileModal from '@/components/workflow/CreateProfileModal';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -150,3 +150,4 @@ const CommandeFournisseurModal = ({ isOpen, open, onClose, onOpenChange, onSaved
 };
 
 export default CommandeFournisseurModal;
+

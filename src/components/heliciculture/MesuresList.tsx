@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { MesureModal } from './';
 
@@ -55,3 +55,4 @@ const MesuresList: React.FC = () => {
 };
 
 export default MesuresList;
+
