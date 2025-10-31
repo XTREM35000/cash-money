@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCallback } from 'react';
 
-import { useOnboarding } from '../contexts/OnboardingContext';
+import { useOnboarding } from '@/components/workflow/OnboardingContext';
 import { AdminModal } from './workflow/AdminModal';
 import { PlanModal } from './workflow/PlanModal';
 import { SMSValidationModal } from './workflow/SmsValidationModal';
@@ -12,7 +13,7 @@ interface SplashScreenProps {
   isAppReady: boolean;
 }
 
-const SplashScreen = ({ isAppReady }: SplashScreenProps) => {
+const SplashScreen = memo(({ isAppReady }: SplashScreenProps) => {
   const [isVisible, setIsVisible] = useState(true);
   const { currentStep, completeCurrentStep } = useOnboarding();
 
@@ -326,6 +327,6 @@ const SplashScreen = ({ isAppReady }: SplashScreenProps) => {
       )}
     </AnimatePresence>
   );
-};
+});
 
 export default SplashScreen;

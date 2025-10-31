@@ -7,7 +7,7 @@ import { EmailInput } from '../ui/email-input';
 import { PasswordInput } from '../ui/password-input';
 import { Label } from '../ui/label';
 import { supabase } from '../../lib/supabase';
-import { useOnboarding } from '../../contexts/OnboardingContext';
+import { useOnboarding } from '@/components/workflow/OnboardingContext';
 
 export function AuthenticationModal() {
   const { completeCurrentStep } = useOnboarding();

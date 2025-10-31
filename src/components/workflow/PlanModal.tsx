@@ -4,7 +4,7 @@ import { Button } from '../ui/button';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Label } from '../ui/label';
 import { supabase } from '../../lib/supabase';
-import { useOnboarding } from '../../contexts/OnboardingContext';
+import { useOnboarding } from '@/components/workflow/OnboardingContext';
 
 const plans = [
   {
@@ -56,7 +56,7 @@ export function PlanModal() {
         ]);
 
       if (subError) throw subError;
-      
+
       completeCurrentStep();
     } catch (error) {
       console.error('Error selecting plan:', error);

@@ -1,79 +1,52 @@
-import { useEffect, useState } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import React, { Suspense, useEffect, useState } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { OnboardingProvider } from "./contexts/OnboardingContext";
+import { Providers } from "@/app/providers";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import SplashScreen from "./components/SplashScreen";
-import Dashboard from "./pages/Dashboard";
-import Clients from "./pages/Clients";
-import NotFound from "./pages/NotFound";
-import { clientsService, itemsService, transactionsService, paymentsService } from "@/services";
+import OnboardingProvider from '@/components/workflow/OnboardingContext';
 import AppLayout from '@/components/AppLayout';
+import SplashScreen from "./components/SplashScreen";
 
-const queryClient = new QueryClient();
+// Use React.lazy for code splitting
+const Dashboard = React.lazy(() => import("./pages/Dashboard2"));
+const Clients = React.lazy(() => import("./pages/Clients"));
+const NotFound = React.lazy(() => import("./pages/NotFound"));
+
+const AppRoutes = () => (
+  <Routes>
+    <Route path="/" element={<AppLayout title="Dashboard"><Dashboard /></AppLayout>} />
+    <Route path="/clients" element={<AppLayout title="Clients"><Clients /></AppLayout>} />
+    <Route path="*" element={<AppLayout title="404"><NotFound /></AppLayout>} />
+  </Routes>
+);
 
 const App = () => {
   const [isAppReady, setIsAppReady] = useState(false);
 
   useEffect(() => {
-    // Preload critical data before showing the UI to avoid flicker
-    const prefetch = async () => {
-      try {
-        await Promise.all([
-          queryClient.prefetchQuery({
-            queryKey: ["clients"],
-            queryFn: () => clientsService.getAll()
-          }),
-          queryClient.prefetchQuery({
-            queryKey: ["items"],
-            queryFn: () => itemsService.getAll()
-          }),
-          queryClient.prefetchQuery({
-            queryKey: ["transactions"],
-            queryFn: () => transactionsService.getAll()
-          }),
-          queryClient.prefetchQuery({
-            queryKey: ["payments"],
-            queryFn: () => paymentsService.getAll()
-          })
-        ]);
-      } catch (e) {
-        // silent - we'll still show UI even if some prefetch fails
-        console.error('Prefetch error', e);
-      } finally {
-        setIsAppReady(true);
-      }
-    };
-
-    prefetch();
+    // Simuler un temps de chargement minimal pour éviter le flash
+    const timer = setTimeout(() => setIsAppReady(true), 300);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <Providers>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
         <SidebarProvider>
           <BrowserRouter>
             <OnboardingProvider>
               {!isAppReady ? (
                 <SplashScreen isAppReady={isAppReady} />
               ) : (
-                <Routes>
-                  <Route path="/" element={<AppLayout title="Dashboard"><Dashboard /></AppLayout>} />
-                  <Route path="/clients" element={<AppLayout title="Clients"><Clients /></AppLayout>} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<AppLayout title="404"><NotFound /></AppLayout>} />
-                </Routes>
+                <Suspense fallback={<div className="p-6 text-center">Chargement...</div>}>
+                  <AppRoutes />
+                </Suspense>
               )}
             </OnboardingProvider>
           </BrowserRouter>
         </SidebarProvider>
       </TooltipProvider>
-    </QueryClientProvider>
+    </Providers>
   );
 };
 

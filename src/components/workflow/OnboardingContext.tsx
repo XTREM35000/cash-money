@@ -1,92 +1,130 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/lib/supabase';
 
-type OnboardingStep = 'plan' | 'profile' | 'sms' | 'done' | null;
+type OnboardingStep = 'splash' | 'admin' | 'plan' | 'sms' | 'auth' | 'complete';
 
-interface OnboardingState {
+interface OnboardingContextType {
   currentStep: OnboardingStep;
-  started: boolean;
-  completed: boolean;
-  start: () => void;
-  next: (step?: OnboardingStep) => void;
-  skip: () => void;
-  reset: () => void;
+  setCurrentStep: (step: OnboardingStep) => void;
+  isLoading: boolean;
+  checkWorkflowState: () => Promise<void>;
+  completeCurrentStep: () => void;
 }
 
-const STORAGE_KEY = 'gcm_onboarding_state_v1';
+const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
 
-const OnboardingContext = createContext<OnboardingState | undefined>(undefined);
+export function OnboardingProvider({ children }: { children: React.ReactNode }) {
+  const [currentStep, setCurrentStep] = useState<OnboardingStep>('splash');
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
-export const OnboardingProvider: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
-  const [currentStep, setCurrentStep] = useState<OnboardingStep>(null);
-  const [started, setStarted] = useState(false);
-  const [completed, setCompleted] = useState(false);
+  const checkWorkflowState = async () => {
+    try {
+      setIsLoading(true);
+
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setCurrentStep('auth');
+        return;
+      }
+
+      // Check if super admin exists
+      const { data: superAdmin } = await supabase
+        .from('users')
+        .select('id, role')
+        .eq('role', 'super_admin')
+        .single();
+
+      if (!superAdmin) {
+        setCurrentStep('admin');
+        return;
+      }
+
+      // If user is not super admin, check if they have a plan
+      if (user) {
+        const { data: subscription } = await supabase
+          .from('user_subscriptions')
+          .select('id, status')
+          .eq('user_id', user.id)
+          .single();
+
+        if (!subscription) {
+          setCurrentStep('plan');
+          return;
+        }
+
+        // Check if phone is verified
+        const { data: userProfile } = await supabase
+          .from('users')
+          .select('is_phone_verified')
+          .eq('id', user.id)
+          .single();
+
+        if (!userProfile?.is_phone_verified) {
+          setCurrentStep('sms');
+          return;
+        }
+      }
+
+      setCurrentStep('complete');
+    } catch (error) {
+      console.error('Error checking workflow state:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const completeCurrentStep = () => {
+    switch (currentStep) {
+      case 'splash':
+        checkWorkflowState();
+        break;
+      case 'admin':
+        setCurrentStep('plan');
+        break;
+      case 'plan':
+        setCurrentStep('sms');
+        break;
+      case 'sms':
+        setCurrentStep('auth');
+        break;
+      case 'auth':
+      case 'complete':
+        navigate('/dashboard');
+        break;
+    }
+  };
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        setStarted(!!parsed.started);
-        setCompleted(!!parsed.completed);
-        setCurrentStep(parsed.currentStep ?? null);
-      }
-    } catch (e) {
-      // ignore
+    const session = supabase.auth.getSession();
+    if (session) {
+      checkWorkflowState();
     }
   }, []);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ started, completed, currentStep }));
-    } catch (e) {
-      // ignore
-    }
-  }, [started, completed, currentStep]);
-
-  const start = () => {
-    setStarted(true);
-    setCurrentStep('plan');
-    setCompleted(false);
-  };
-
-  const next = (step?: OnboardingStep) => {
-    if (step) {
-      setCurrentStep(step);
-      if (step === 'done') setCompleted(true);
-      return;
-    }
-
-    if (currentStep === 'plan') setCurrentStep('profile');
-    else if (currentStep === 'profile') setCurrentStep('sms');
-    else if (currentStep === 'sms') {
-      setCurrentStep('done');
-      setCompleted(true);
-    }
-  };
-
-  const skip = () => {
-    setCurrentStep('done');
-    setCompleted(true);
-  };
-
-  const reset = () => {
-    setStarted(false);
-    setCurrentStep(null);
-    setCompleted(false);
-    try { localStorage.removeItem(STORAGE_KEY); } catch (e) { }
-  };
-
   return (
-    <OnboardingContext.Provider value={{ currentStep, started, completed, start, next, skip, reset }}>
+    <OnboardingContext.Provider
+      value={{
+        currentStep,
+        setCurrentStep,
+        isLoading,
+        checkWorkflowState,
+        completeCurrentStep
+      }}
+    >
       {children}
     </OnboardingContext.Provider>
   );
-};
+}
 
-export const useOnboarding = () => {
-  const ctx = useContext(OnboardingContext);
-  if (!ctx) throw new Error('useOnboarding must be used within OnboardingProvider');
-  return ctx;
-};
+export function useOnboarding() {
+  const context = useContext(OnboardingContext);
+  if (context === undefined) {
+    throw new Error('useOnboarding must be used within an OnboardingProvider');
+  }
+  return context;
+}
 
 export default OnboardingProvider;
